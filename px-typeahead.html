@@ -1,19 +1,3 @@
-<!--
-Copyright (c) 2018, General Electric
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
--->
-
 <link rel="import" href="../polymer/polymer.html" />
 <link rel="import" href="../promise-polyfill/promise-polyfill-lite.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
@@ -47,7 +31,9 @@ Custom property | Description
 -->
 <dom-module id="px-typeahead">
   <template>
-    <style include="px-typeahead-styles"></style>
+    <style include="px-typeahead-styles">
+      .lower{ font-size: 13px; color: #2d7399; } .result{font-size: 16px;}#searchResults{max-height: 300px !important;}
+    </style>
     <template is="dom-if" if="{{prefetchUrl}}">
       <iron-ajax auto url="{{prefetchUrl}}" handle-as="json" last-response="{{_prefetchedCandidates}}">
       </iron-ajax>
@@ -55,7 +41,7 @@ Custom property | Description
 
     <div class="search__form">
       <input id="search" class="text-input search__box" disabled$="[[disabled]]" placeholder="{{placeholder}}" value="{{inputValue::input}}"
-         on-keydown="_keydown" on-focus="_onfocus" on-blur="_onblur" on-input="_onSearchInputChange" autocomplete="off" required="[[required]]">
+        on-keydown="_keydown" on-focus="_onfocus" on-blur="_onblur" on-input="_onSearchInputChange" autocomplete="off" required="[[required]]">
       </input>
       <template is="dom-if" if="{{!inputValue}}">
         <px-icon id="search__icon" class$="typeahead__icon [[_disabledClass(disabled)]]" icon="px-utl:search"></px-icon>
@@ -69,8 +55,24 @@ Custom property | Description
       <div class="dropdown__container">
 
         <ul id="searchResults" class="list-bare">
-          <template is="dom-repeat" items="[[_boldResults(_suggestions.*, inputValue)]]">
-            <li on-tap="_select" on-mouseover="_onhover" on-keydown="_keydown" class="result">[[item.prefix]]<span class="bold">[[item.highlight]]</span>[[item.suffix]]</li>
+          <template is="dom-if" if="{{!isBasic}}">
+            <template is="dom-repeat" items="[[_boldResults(_suggestions.*, inputValue)]]">
+              <li on-tap="_select" on-mouseover="_onhover" on-keydown="_keydown" class="result">[[item.prefix]]
+                <span class="bold">[[item.highlight]]</span>[[item.suffix]]</li>
+            </template>
+          </template>
+          <template is="dom-if" if="{{isBasic}}">
+            <template is="dom-repeat" items="[[_customResults(suggestionList, inputValue)]]" restamp="true" render>
+              <li on-tap="_select" on-mouseover="_onhover" on-keydown="_keydown" class="result">
+                <b>[[item.nameHighlight]]</b>[[item.instanceName]]
+                <div class="lower">
+                  <span> ID : <b>[[item.idHighlight]]</b>
+                    <span class="instanceId">[[item.instanceId]]</span>
+                  </span>,
+                  <span> SN : <b>[[item.numberHighlight]]</b>[[item.serialNumber]]</span>
+                </div>
+              </li>
+            </template>
           </template>
         </ul>
       </div>
@@ -116,8 +118,8 @@ Custom property | Description
         value: ''
       },
       /**
-      * The pre-fetched candidates retrieved by prefetchUrl
-      */
+       * The pre-fetched candidates retrieved by prefetchUrl
+       */
       _prefetchedCandidates: {
         type: Array,
         value: function () {
@@ -189,12 +191,22 @@ Custom property | Description
         type: Boolean,
         value: false,
         observer: '_requiredChanged'
+      },
+      isBasic: {
+        type: Boolean,
+        notify: true
+      },
+      suggestionList: {
+        type: Array,
+        notify: true
       }
     },
 
     behaviors: [Polymer.IronResizableBehavior],
 
-    listeners: { 'iron-resize': '_setSearchResultSize' },
+    listeners: {
+      'iron-resize': '_setSearchResultSize'
+    },
 
     ready: function () {
       // `ready` is called after all elements have been configured, but
@@ -230,7 +242,7 @@ Custom property | Description
       if (e.which === 40) { //down Arrow
         e.preventDefault();
         this._downArrowPress(e);
-      } else if (e.which === 38) {  //up arrow
+      } else if (e.which === 38) { //up arrow
         e.preventDefault();
         this._upArrowPress(e);
       } else if (e.which === 13) { //enter key
@@ -283,15 +295,23 @@ Custom property | Description
      *
      */
     _select: function (e) {
-      var selectedItem = e.currentTarget,
-        text = selectedItem.textContent.trim();
+      if (this.isBasic) {
+        let selectedValue = e.currentTarget.querySelector('.instanceId').textContent.trim();
+        this.set('value', selectedValue);
+        this.async(function () {
+          this.set('suggestionList', []);
+        }, 100);
+      } else {
+        var selectedItem = e.currentTarget,
+          text = selectedItem.textContent.trim();
 
-      this.$.search.focus();
-      this.set('inputValue', text);
-      this.set('value', text);
-      this.async(function () {
-        this.set('_suggestions', []);
-      }, 100);
+        this.$.search.focus();
+        this.set('inputValue', text);
+        this.set('value', text);
+        this.async(function () {
+          this.set('_suggestions', []);
+        }, 100);
+      }
 
       this.toggleClass('validation-error', this.required && !this.value, this.$.search);
       this.fire('px-typeahead-item-selected', this.value);
@@ -350,6 +370,11 @@ Custom property | Description
       }
     },
     _enterPress: function (e) {
+      if (this.isBasic) {
+        this.async(function () {
+          this._suggestions = [];
+        }, 100);
+      }
       var alreadySelected,
         selectedItem,
         suggestionsMenu,
@@ -482,6 +507,49 @@ Custom property | Description
       });
       return resultsList;
     },
+    _customResults: function (items, term) {
+      var resultsList = items.map(function (fullString) {
+        var termKey;
+        var termValue;
+        var termIndex
+        for (var key in fullString) {
+          if (fullString[key].indexOf(term) !== -1) {
+            termIndex = fullString[key].indexOf(term)
+            termLocation = key;
+            termValue = fullString[key];
+            break;
+          }
+        }
+        if (termValue !== "") {
+          if (termLocation === "instanceId") {
+            return {
+              instanceId: termValue.trim().substr(termIndex + term.length),
+              idHighlight: termValue.trim().substr(termIndex, term.length),
+              instanceName: fullString.instanceName,
+              serialNumber: fullString.serialNumber,
+            };
+          } else if (termLocation === "instanceName") {
+            return {
+              instanceId: fullString.instanceId,
+              nameHighlight: termValue.trim().substr(termIndex, term.length),
+              instanceName: termValue.trim().substr(termIndex + term.length),
+              serialNumber: fullString.serialNumber,
+            };
+          } else {
+            return {
+              instanceId: fullString.instanceId,
+              instanceName: fullString.instanceName,
+              numberHighlight: termValue.trim().substr(termIndex, term.length),
+              serialNumber: termValue.trim().substr(termIndex + term.length),
+            };
+          }
+        }
+      });
+      resultsList = resultsList.filter(function (result) {
+        return result !== "undefined";
+      });
+      return resultsList;
+    },
     _search: function (term) {
       if (this._isFocused) {
         this.debounce('search', function () {
@@ -519,7 +587,7 @@ Custom property | Description
 
       }
     },
-    _clear: function() {
+    _clear: function () {
       this.set('inputValue', '');
       this.set('value', '');
       this.set('_suggestions', []);
@@ -529,8 +597,8 @@ Custom property | Description
     _disabledClass: function (disabled) {
       return disabled ? 'disableIcon' : '';
     },
-    _requiredChanged: function(newValue) {
-      if(newValue === false) {
+    _requiredChanged: function (newValue) {
+      if (newValue === false) {
         this.toggleClass('validation-error', false, this.$.search);
       }
     }

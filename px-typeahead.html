@@ -66,10 +66,13 @@ Custom property | Description
               <li on-tap="_select" on-mouseover="_onhover" on-keydown="_keydown" class="result">
                 <b>[[item.nameHighlight]]</b>[[item.instanceName]]
                 <div class="lower">
-                  <span> ID : <b>[[item.idHighlight]]</b>
+                  <span> ID : <b class="highlightedId">[[item.idHighlight]]</b>
                     <span class="instanceId">[[item.instanceId]]</span>
-                  </span>,
-                  <span> SN : <b>[[item.numberHighlight]]</b>[[item.serialNumber]]</span>
+                  </span>
+                  <template is="dom-if" if="{{item.serialNumber}}">
+                    ,
+                    <span>SN : <b>[[item.numberHighlight]]</b>[[item.serialNumber]]</span>
+                  </template>
                 </div>
               </li>
             </template>
@@ -296,7 +299,8 @@ Custom property | Description
      */
     _select: function (e) {
       if (this.isBasic) {
-        let selectedValue = e.currentTarget.querySelector('.instanceId').textContent.trim();
+        var selectedValue = e.currentTarget.querySelector('.highlightedId').textContent.trim() + e.currentTarget.querySelector(
+          '.instanceId').textContent.trim();
         this.set('value', selectedValue);
         this.async(function () {
           this.set('suggestionList', []);

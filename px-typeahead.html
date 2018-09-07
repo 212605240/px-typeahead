@@ -514,7 +514,7 @@ Custom property | Description
     _customResults: function (items, term) {
       var resultsList = items.map(function (fullString) {
         var termKey;
-        var termValue;
+        var termValue = "";
         var termIndex
         for (var key in fullString) {
           if (fullString[key].indexOf(term) !== -1) {
@@ -547,6 +547,12 @@ Custom property | Description
               serialNumber: termValue.trim().substr(termIndex + term.length),
             };
           }
+        } else {
+          return {
+            instanceId: fullString.instanceId,
+            instanceName: fullString.instanceName,
+            serialNumber: fullString.serialNumber,
+          };
         }
       });
       resultsList = resultsList.filter(function (result) {

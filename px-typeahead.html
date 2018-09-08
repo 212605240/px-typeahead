@@ -64,14 +64,16 @@ Custom property | Description
           <template is="dom-if" if="{{isBasic}}">
             <template is="dom-repeat" items="[[_customResults(suggestionList, inputValue)]]" restamp="true" render>
               <li on-tap="_select" on-mouseover="_onhover" on-keydown="_keydown" class="result">
-                <b>[[item.nameHighlight]]</b>[[item.instanceName]]
+                [[item.firstHalfName]]<b>[[item.nameHighlight]]</b>[[item.instanceName]]
                 <div class="lower">
-                  <span> ID : <b class="highlightedId">[[item.idHighlight]]</b>
-                    <span class="instanceId">[[item.instanceId]]</span>
+                  <span> ID :
+                    <span>[[item.firstHalfId]]</span> <b class="highlightedId">[[item.idHighlight]]</b>
+                  <span class="instanceId">[[item.instanceId]]</span>
                   </span>
                   <template is="dom-if" if="{{item.serialNumber}}">
                     ,
-                    <span>SN : <b>[[item.numberHighlight]]</b>[[item.serialNumber]]</span>
+                    <span>SN :
+                      <span>[[item.firstHalfNumber]]</span> <b>[[item.numberHighlight]]</b>[[item.serialNumber]]</span>
                   </template>
                 </div>
               </li>
@@ -526,32 +528,63 @@ Custom property | Description
         }
         if (termValue !== "") {
           if (termLocation === "instanceId") {
-            return {
-              instanceId: termValue.trim().substr(termIndex + term.length),
-              idHighlight: termValue.trim().substr(termIndex, term.length),
-              instanceName: fullString.instanceName,
-              serialNumber: fullString.serialNumber,
-            };
+            if (termIndex > 0) {
+              return {
+                firstHalfId: termValue.trim().substr(0, termIndex),
+                idHighlight: termValue.trim().substr(termIndex, term.length),
+                instanceId: termValue.trim().substr(termValue.trim().substr(0, termIndex) + term.length),
+                instanceName: fullString.instanceName,
+                serialNumber: fullString.serialNumber
+              };
+            } else {
+              return {
+                instanceId: termValue.trim().substr(termIndex + term.length),
+                idHighlight: termValue.trim().substr(termIndex, term.length),
+                instanceName: fullString.instanceName,
+                serialNumber: fullString.serialNumber
+              };
+            }
           } else if (termLocation === "instanceName") {
-            return {
-              instanceId: fullString.instanceId,
-              nameHighlight: termValue.trim().substr(termIndex, term.length),
-              instanceName: termValue.trim().substr(termIndex + term.length),
-              serialNumber: fullString.serialNumber,
-            };
+            if (termIndex > 0) {
+              return {
+                instanceId: fullString.instanceId,
+                firstHalfName: termValue.trim().substr(0, termIndex),
+                nameHighlight: termValue.trim().substr(termIndex, term.length),
+                instanceName: termValue.trim().substr(termIndex + term.length),
+                serialNumber: fullString.serialNumber
+              };
+            } else {
+              return {
+                instanceId: fullString.instanceId,
+                nameHighlight: termValue.trim().substr(termIndex, term.length),
+                instanceName: termValue.trim().substr(termIndex + term.length),
+                serialNumber: fullString.serialNumber
+              };
+            }
           } else {
-            return {
-              instanceId: fullString.instanceId,
-              instanceName: fullString.instanceName,
-              numberHighlight: termValue.trim().substr(termIndex, term.length),
-              serialNumber: termValue.trim().substr(termIndex + term.length),
-            };
+            if (termIndex > 0) {
+              return {
+                instanceId: fullString.instanceId,
+                instanceName: fullString.instanceName,
+                firstHalfNumber: termValue.trim().substr(0, termIndex),
+                numberHighlight: termValue.trim().substr(termIndex, term.length),
+                serialNumber: termValue.trim().substr(termValue.trim().substr(0, termIndex) + term.length)
+              };
+            } else {
+              return {
+                instanceId: fullString.instanceId,
+                instanceName: fullString.instanceName,
+                numberHighlight: termValue.trim().substr(termIndex, term.length),
+                serialNumber: termValue.trim().substr(termIndex + term.length)
+              };
+            }
+
           }
         } else {
           return {
             instanceId: fullString.instanceId,
             instanceName: fullString.instanceName,
-            serialNumber: fullString.serialNumber,
+            serialNumber: fullString.serialNumber
           };
         }
       });

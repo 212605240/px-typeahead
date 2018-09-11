@@ -71,7 +71,7 @@ Custom property | Description
                     <span>[[item.firstHalfId]]</span> <b class="highlightedId">[[item.idHighlight]]</b>
                   <span class="instanceId">[[item.instanceId]]</span>
                   </span>
-                  <template is="dom-if" if="{{item.serialNumber}}">
+                  <template is="dom-if" if="{{_matchSerialNumber(item.serialNumber,item.numberHighlight)}}">
                     ,
                     <span>SN :
                       <span>[[item.firstHalfNumber]]</span> <b>[[item.numberHighlight]]</b>[[item.serialNumber]]</span>
@@ -594,6 +594,9 @@ Custom property | Description
         return result !== "undefined";
       });
       return resultsList;
+    },
+    _matchSerialNumber: function (sNumber, sHighlight) {
+      return (sNumber !== "" || sHighlight !== "") ? true : false;
     },
     _search: function (term) {
       if (this._isFocused) {

@@ -410,16 +410,17 @@ Custom property | Description
         //no results, return false
         return false;
       }
-
-      //if we've reached this point, selectedItem should be set.
-      this.set('value', selectedItem.textContent.trim());
-      this.set('inputValue', selectedItem.textContent.trim());
-      this.async(function () {
-        this.set('_suggestions', []);
-      }, 100);
-      this.toggleClass('validation-error', false, this.$.search);
-      this.fire('px-typeahead-item-selected', this.value);
-      Polymer.dom(this.root).querySelector('input').focus();
+      if (!this.isBasic) {
+        //if we've reached this point, selectedItem should be set.
+        this.set('value', selectedItem.textContent.trim());
+        this.set('inputValue', selectedItem.textContent.trim());
+        this.async(function () {
+          this.set('_suggestions', []);
+        }, 100);
+        this.toggleClass('validation-error', false, this.$.search);
+        this.fire('px-typeahead-item-selected', this.value);
+        Polymer.dom(this.root).querySelector('input').focus();
+      }
     },
     _backspacePress: function (e) {
       this.value = '';

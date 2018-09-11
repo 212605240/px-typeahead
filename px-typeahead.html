@@ -32,8 +32,7 @@ Custom property | Description
 <dom-module id="px-typeahead">
   <template>
     <style include="px-typeahead-styles">
-      .lower{ font-size: 13px; color: #2d7399; } .result{font-size: 16px;}#searchResults{max-height: 300px !important;z-index:
-      10;}
+      .lower{ font-size: 13px; color: #2d7399; } .result{font-size: 16px;}#searchResults{max-height: 300px !important;z-index:2;}
     </style>
     <template is="dom-if" if="{{prefetchUrl}}">
       <iron-ajax auto url="{{prefetchUrl}}" handle-as="json" last-response="{{_prefetchedCandidates}}">

@@ -41,7 +41,8 @@ Custom property | Description
 
     <div class="search__form">
       <input id="search" class="text-input search__box" disabled$="[[disabled]]" placeholder="{{placeholder}}" value="{{inputValue::input}}"
-        on-keydown="_keydown" on-focus="_onfocus" on-blur="_onblur" on-input="_onSearchInputChange" autocomplete="off" required="[[required]]">
+        on-keydown="_keydown" on-keypress="_keypress" on-focus="_onfocus" on-blur="_onblur" on-input="_onSearchInputChange"
+        autocomplete="off" required="[[required]]">
       </input>
       <template is="dom-if" if="{{!inputValue}}">
         <px-icon id="search__icon" class$="typeahead__icon [[_disabledClass(disabled)]]" icon="px-utl:search"></px-icon>
@@ -205,6 +206,10 @@ Custom property | Description
       suggestionList: {
         type: Array,
         notify: true
+      },
+      allowAlphaNumeric: {
+        type: Boolean,
+        value: false
       }
     },
 
@@ -648,6 +653,16 @@ Custom property | Description
     _requiredChanged: function (newValue) {
       if (newValue === false) {
         this.toggleClass('validation-error', false, this.$.search);
+      }
+    },
+    _keypress: function (e) {
+      if (this.allowAlphaNumeric) {
+        if (e.which < 48 ||
+          (e.which > 57 && e.which < 65) ||
+          (e.which > 90 && e.which < 97) ||
+          e.which > 122) {
+          e.preventDefault();
+        }
       }
     }
   });

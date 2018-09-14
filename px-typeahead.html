@@ -207,9 +207,8 @@ Custom property | Description
         type: Array,
         notify: true
       },
-      allowAlphaNumeric: {
-        type: Boolean,
-        value: false
+      allowedCharacters: {
+        type: String,
       }
     },
 
@@ -655,14 +654,13 @@ Custom property | Description
         this.toggleClass('validation-error', false, this.$.search);
       }
     },
+    _escapeRegExp(string) {
+      return string.replace(/([.*+?^${}()|\[\]\/\\])/g, "\$1");
+    },
     _keypress: function (e) {
-      if (this.allowAlphaNumeric) {
-        if (e.which < 48 ||
-          (e.which > 57 && e.which < 65) ||
-          (e.which > 90 && e.which < 97) ||
-          e.which > 122) {
-          e.preventDefault();
-        }
+      var regExp = this._escapeRegExp(this.allowedCharacters).match(/^(.)([^\1]+)\1([igm]+)$/);
+      if (!(new RegExp(regExp[2], regExp[3])).test(e.key)) {
+        e.preventDefault();
       }
     }
   });

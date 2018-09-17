@@ -655,7 +655,8 @@ Custom property | Description
       }
     },
     _escapeRegExp(string) {
-      return string.replace(/([.*+?^${}()|\[\]\/\\])/g, "\$1");
+      if (string)
+        return string.replace(/([.*+?^${}()|\[\]\/\\])/g, "\$1");
     },
     _keypress: function (e) {
       var regExp = this._escapeRegExp(this.allowedCharacters).match(/^(.)([^\1]+)\1([igm]+)$/);

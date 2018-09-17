@@ -659,9 +659,11 @@ Custom property | Description
         return string.replace(/([.*+?^${}()|\[\]\/\\])/g, "\$1");
     },
     _keypress: function (e) {
-      var regExp = this._escapeRegExp(this.allowedCharacters).match(/^(.)([^\1]+)\1([igm]+)$/);
-      if (!(new RegExp(regExp[2], regExp[3])).test(e.key)) {
-        e.preventDefault();
+      if (this.allowedCharacters) {
+        var regExp = this._escapeRegExp(this.allowedCharacters).match(/^(.)([^\1]+)\1([igm]+)$/);
+        if (!(new RegExp(regExp[2], regExp[3])).test(e.key)) {
+          e.preventDefault();
+        }
       }
     }
   });

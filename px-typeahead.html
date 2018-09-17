@@ -71,7 +71,7 @@ Custom property | Description
                     <span>[[item.firstHalfId]]</span> <b class="highlightedId">[[item.idHighlight]]</b>
                   <span class="instanceId">[[item.instanceId]]</span>
                   </span>
-                  <template is="dom-if" if="{{_matchSerialNumber(item.serialNumber,item.numberHighlight)}}">
+                  <template is="dom-if" if="{{_matchSerialNumber(item)}}">
                     ,
                     <span>SN :
                       <span>[[item.firstHalfNumber]]</span> <b>[[item.numberHighlight]]</b>[[item.serialNumber]]</span>
@@ -525,7 +525,7 @@ Custom property | Description
         var termValue = "";
         var termIndex
         for (var key in fullString) {
-          if (fullString[key].indexOf(term) !== -1) {
+          if (fullString[key].indexOf(term) !== -1 && fullString[key].indexOf(term) == 0) {
             termIndex = fullString[key].indexOf(term)
             termLocation = key;
             termValue = fullString[key];
@@ -538,7 +538,7 @@ Custom property | Description
               return {
                 firstHalfId: termValue.trim().substr(0, termIndex),
                 idHighlight: termValue.trim().substr(termIndex, term.length),
-                instanceId: termValue.trim().substr(termValue.trim().substr(0, termIndex) + term.length),
+                instanceId: termValue.trim().substr(termIndex + term.length),
                 instanceName: fullString.instanceName,
                 serialNumber: fullString.serialNumber
               };
@@ -574,7 +574,7 @@ Custom property | Description
                 instanceName: fullString.instanceName,
                 firstHalfNumber: termValue.trim().substr(0, termIndex),
                 numberHighlight: termValue.trim().substr(termIndex, term.length),
-                serialNumber: termValue.trim().substr(termValue.trim().substr(0, termIndex) + term.length)
+                serialNumber: termValue.trim().substr(termIndex + term.length)
               };
             } else {
               return {
@@ -599,8 +599,8 @@ Custom property | Description
       });
       return resultsList;
     },
-    _matchSerialNumber: function (sNumber, sHighlight) {
-      return (sNumber !== "" || sHighlight !== "") ? true : false;
+    _matchSerialNumber: function (item) {
+      return (item.serialNumber !== "") ? true : false;
     },
     _search: function (term) {
       if (this._isFocused) {

@@ -314,7 +314,7 @@ Custom property | Description
         }, 100);
       } else {
         var selectedItem = e.currentTarget,
-          text = selectedItem.textContent.trim();
+          text = selectedItem.innerText.trim();
 
         this.$.search.focus();
         this.set('inputValue', text);
